@@ -1,0 +1,15 @@
+{
+  "name": "klkt-backend",
+  "version": "1.0.0",
+  "description": "KLKT Mobile Platform Free Backend & Admin Control Center",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["klkt", "backend", "admin"],
+  "author": "KLKT",
+  "license": "MIT"
+}

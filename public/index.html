@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KLKT Control Center | Admin Dashboard</title>
+  <style>
+    :root {
+      --primary: #7C3AED;
+      --primary-dark: #5B21B6;
+      --primary-light: #EDE9FE;
+      --bg: #F8FAFC;
+      --card-bg: #FFFFFF;
+      --text: #0F172A;
+      --text-muted: #64748B;
+      --border: #E2E8F0;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --danger: #EF4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: #FFFFFF;
+      border-right: 1px solid var(--border);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, #7C3AED, #4C1D95);
+      color: #FFFFFF;
+      font-weight: 800;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+    }
+
+    .brand-name {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .nav-items {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+    }
+
+    .nav-btn:hover {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .nav-btn.active {
+      background: var(--primary);
+      color: #FFFFFF;
+    }
+
+    .sidebar-footer {
+      font-size: 12px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      padding: 32px 40px;
+      overflow-y: auto;
+    }
+
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+
+    .page-title {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #7C3AED, #5B21B6);
+      color: #FFFFFF;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 9999px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);
+      transition: all 0.2s;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.95;
+      transform: translateY(-1px);
+    }
+
+    /* Stats Overview */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    }
+
+    .stat-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .stat-number {
+      font-size: 30px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .stat-meta {
+      font-size: 12px;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    /* Content Cards / Tables */
+    .panel-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+      margin-bottom: 24px;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .panel-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 16px;
+      font-size: 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .badge-video { background: #EDE9FE; color: #6D28D9; }
+    .badge-photo { background: #E0F2FE; color: #0369A1; }
+    .badge-sensor { background: #FEF3C7; color: #B45309; }
+    .badge-pending { background: #FEF3C7; color: #B45309; }
+    .badge-approved { background: #D1FAE5; color: #047857; }
+    .badge-rejected { background: #FEE2E2; color: #B91C1C; }
+
+    .action-btn-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-approve { background: #D1FAE5; color: #047857; }
+    .btn-approve:hover { background: #A7F3D0; }
+    .btn-reject { background: #FEE2E2; color: #B91C1C; }
+    .btn-reject:hover { background: #FECACA; }
+    .btn-delete { background: #F1F5F9; color: #64748B; }
+    .btn-delete:hover { background: #E2E8F0; color: #0F172A; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-box {
+      background: #FFFFFF;
+      width: 100%;
+      max-width: 520px;
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 14px;
+      outline: none;
+      transition: border 0.2s;
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--primary);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .btn-cancel {
+      background: #F1F5F9;
+      color: var(--text-muted);
+      border: none;
+      padding: 12px 20px;
+      border-radius: 9999px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">K</div>
+      <div>
+        <div class="brand-name">KLKT Admin</div>
+        <div style="font-size: 11px; color: var(--text-muted);">Control Center v1.0</div>
+      </div>
+    </div>
+
+    <div class="nav-items">
+      <button class="nav-btn active" onclick="switchTab('tasks')">📋 Manage Tasks</button>
+      <button class="nav-btn" onclick="switchTab('submissions')">📥 Control Tasks Done</button>
+      <button class="nav-btn" onclick="switchTab('wallet')">💰 Worker & Wallets</button>
+    </div>
+
+    <div class="sidebar-footer">
+      <div>Backend API: <b>Active (Port 3000)</b></div>
+      <div style="margin-top: 4px;">Zero Cost • Free Local Storage</div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    
+    <!-- Header -->
+    <div class="header-bar">
+      <div>
+        <h1 class="page-title" id="pageTitle">Tasks Management</h1>
+        <p class="page-subtitle" id="pageSubtitle">Publish and control tasks visible in the KLKT worker app</p>
+      </div>
+      <button class="btn-primary" onclick="openAddTaskModal()">
+        <span>➕</span> Add New Task
+      </button>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <span class="stat-label">Active Published Tasks</span>
+        <span class="stat-number" id="statActiveTasks">3</span>
+        <span class="stat-meta">Live in mobile app</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Tasks Awaiting Review</span>
+        <span class="stat-number" id="statPendingReviews" style="color: var(--warning);">1</span>
+        <span class="stat-meta">Needs your approval</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Worker Current Balance</span>
+        <span class="stat-number" id="statWorkerBalance">USD 0.00</span>
+        <span class="stat-meta" id="statWorkerEmail">kelvinwakaba46@gmail.com</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Total Submissions Done</span>
+        <span class="stat-number" id="statTotalSubmissions">0</span>
+        <span class="stat-meta">0 Approved</span>
+      </div>
+    </div>
+
+    <!-- TAB 1: Tasks Panel -->
+    <div id="tabTasks" class="panel-card">
+      <div class="panel-header">
+        <h2 class="panel-title">Published Tasks in App</h2>
+        <span style="font-size: 13px; color: var(--text-muted);">Workers see these inside the Tasks tab</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Task Name</th>
+            <th>Type</th>
+            <th>Requirement Rule</th>
+            <th>Payout ($)</th>
+            <th>Open Spots</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="tasksTableBody">
+          <!-- Dynamically populated -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- TAB 2: Submissions Panel (Control Tasks Done) -->
+    <div id="tabSubmissions" class="panel-card" style="display: none;">
+      <div class="panel-header">
+        <h2 class="panel-title">Tasks Done by Workers (Approve or Reject)</h2>
+        <span style="font-size: 13px; color: var(--text-muted);">Approving immediately sends earnings to worker's wallet!</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Date / Time</th>
+            <th>Task Name</th>
+            <th>Worker</th>
+            <th>Pay Rate</th>
+            <th>Status</th>
+            <th>Control Action</th>
+          </tr>
+        </thead>
+        <tbody id="submissionsTableBody">
+          <!-- Dynamically populated -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- TAB 3: Wallets & Worker Panel -->
+    <div id="tabWallet" class="panel-card" style="display: none;">
+      <div class="panel-header">
+        <h2 class="panel-title">Worker Account & Wallet Controls</h2>
+      </div>
+      <div style="background: #F8FAFC; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+        <h3 style="margin-bottom: 8px;">Worker: Kelvin Wakaba</h3>
+        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px;">Email: kelvinwakaba46@gmail.com • Member since October 2026</p>
+        <div style="display: flex; gap: 20px; align-items: center;">
+          <div>
+            <div style="font-size: 12px; color: var(--text-muted);">Current Wallet Balance</div>
+            <div style="font-size: 28px; font-weight: 800; color: var(--primary);" id="walletBalanceBig">USD 0.00</div>
+          </div>
+          <button class="btn-primary" onclick="addBonus()">+ Add Custom Bonus / Funds</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ADD TASK MODAL -->
+  <div class="modal-overlay" id="addTaskModal">
+    <div class="modal-box">
+      <h2 style="margin-bottom: 6px;">Add New Data Collection Task</h2>
+      <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">This task will appear instantly in the KLKT app with the 3D puzzle card design.</p>
+
+      <form id="addTaskForm" onsubmit="handleCreateTask(event)">
+        <div class="form-group">
+          <label class="form-label">Task Title</label>
+          <input type="text" class="form-input" id="taskTitle" placeholder="e.g. Airport Terminal Walkthrough" required>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Type</label>
+            <select class="form-select" id="taskCategory">
+              <option value="video">video</option>
+              <option value="photo">photo</option>
+              <option value="sensor">sensor</option>
+              <option value="audio">audio</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Payout Amount ($ USD)</label>
+            <input type="number" step="0.5" class="form-input" id="taskPay" value="35.00" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Instruction / Rule Banner</label>
+          <input type="text" class="form-input" id="taskRequirement" value="RECORD ONLY 1 RECORDING PER TASK" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Detailed Guidelines for Worker</label>
+          <textarea class="form-textarea" id="taskDesc" rows="3" placeholder="Describe camera movement, lighting, required objects..."></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" onclick="closeAddTaskModal()">Cancel</button>
+          <button type="submit" class="btn-primary">Publish to App</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let currentTab = 'tasks';
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      document.getElementById('tabTasks').style.display = tab === 'tasks' ? 'block' : 'none';
+      document.getElementById('tabSubmissions').style.display = tab === 'submissions' ? 'block' : 'none';
+      document.getElementById('tabWallet').style.display = tab === 'wallet' ? 'block' : 'none';
+
+      if (tab === 'tasks') {
+        document.getElementById('pageTitle').textContent = 'Tasks Management';
+        document.getElementById('pageSubtitle').textContent = 'Publish and control tasks visible in the KLKT worker app';
+      } else if (tab === 'submissions') {
+        document.getElementById('pageTitle').textContent = 'Control Tasks Done';
+        document.getElementById('pageSubtitle').textContent = 'Review uploaded footage and approve payments to workers';
+      } else {
+        document.getElementById('pageTitle').textContent = 'Worker & Wallets';
+        document.getElementById('pageSubtitle').textContent = 'Manage worker balances, payouts, and statistics';
+      }
+
+      loadData();
+    }
+
+    async function loadData() {
+      try {
+        const [tasksRes, subsRes, userRes] = await Promise.all([
+          fetch('/api/tasks').then(r => r.json()),
+          fetch('/api/submissions').then(r => r.json()),
+          fetch('/api/user').then(r => r.json()),
+        ]);
+
+        // Render Stats
+        document.getElementById('statActiveTasks').textContent = tasksRes.length;
+        const pending = subsRes.filter(s => s.status === 'pending');
+        document.getElementById('statPendingReviews').textContent = pending.length;
+        document.getElementById('statWorkerBalance').textContent = `USD ${userRes.balance.toFixed(2)}`;
+        document.getElementById('walletBalanceBig').textContent = `USD ${userRes.balance.toFixed(2)}`;
+        document.getElementById('statWorkerEmail').textContent = userRes.email;
+        document.getElementById('statTotalSubmissions').textContent = `${userRes.submittedTasks} (${userRes.approvedTasks} Approved)`;
+
+        // Render Tasks Table
+        const tasksBody = document.getElementById('tasksTableBody');
+        tasksBody.innerHTML = tasksRes.map(t => `
+          <tr>
+            <td style="font-weight: 700;">${t.title}</td>
+            <td><span class="badge badge-${t.category}">${t.category}</span></td>
+            <td style="font-size: 12px; color: var(--text-muted);">${t.requirement}</td>
+            <td style="font-weight: 800; color: var(--primary);">$${Number(t.pay).toFixed(2)}</td>
+            <td>${t.spots} available</td>
+            <td>
+              <button class="btn-sm btn-delete" onclick="deleteTask('${t.id}')">Delete</button>
+            </td>
+          </tr>
+        `).join('');
+
+        // Render Submissions Table
+        const subsBody = document.getElementById('submissionsTableBody');
+        subsBody.innerHTML = subsRes.map(s => `
+          <tr>
+            <td style="font-size: 13px; color: var(--text-muted);">${new Date(s.submittedAt).toLocaleDateString()} ${new Date(s.submittedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
+            <td style="font-weight: 700;">${s.taskTitle}</td>
+            <td style="font-size: 13px;">${s.workerEmail}</td>
+            <td style="font-weight: 800; color: var(--primary);">$${Number(s.pay).toFixed(2)}</td>
+            <td><span class="badge badge-${s.status}">${s.status}</span></td>
+            <td>
+              ${s.status === 'pending' ? `
+                <div class="action-btn-group">
+                  <button class="btn-sm btn-approve" onclick="approveSubmission('${s.id}')">✓ Approve & Pay</button>
+                  <button class="btn-sm btn-reject" onclick="rejectSubmission('${s.id}')">✕ Reject</button>
+                </div>
+              ` : `<span style="font-size: 12px; color: var(--text-muted);">Completed</span>`}
+            </td>
+          </tr>
+        `).join('');
+
+      } catch (err) {
+        console.error('Failed to load data:', err);
+      }
+    }
+
+    async function handleCreateTask(e) {
+      e.preventDefault();
+      const payload = {
+        title: document.getElementById('taskTitle').value,
+        category: document.getElementById('taskCategory').value,
+        pay: document.getElementById('taskPay').value,
+        requirement: document.getElementById('taskRequirement').value,
+        description: document.getElementById('taskDesc').value,
+      };
+
+      await fetch('/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      closeAddTaskModal();
+      document.getElementById('addTaskForm').reset();
+      loadData();
+    }
+
+    async function deleteTask(id) {
+      if (!confirm('Are you sure you want to remove this task?')) return;
+      await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
+      loadData();
+    }
+
+    async function approveSubmission(id) {
+      const res = await fetch(`/api/submissions/${id}/approve`, { method: 'POST' });
+      const data = await res.json();
+      alert(`Success! Task approved. Worker balance updated to USD ${data.newBalance.toFixed(2)}`);
+      loadData();
+    }
+
+    async function rejectSubmission(id) {
+      const reason = prompt('Reason for rejection:', 'Footage blurred / insufficient duration');
+      if (!reason) return;
+      await fetch(`/api/submissions/${id}/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason }),
+      });
+      loadData();
+    }
+
+    async function addBonus() {
+      const amountStr = prompt('Enter bonus amount in USD to add to worker balance:', '10.00');
+      const amount = parseFloat(amountStr);
+      if (isNaN(amount) || amount <= 0) return;
+      const user = await fetch('/api/user').then(r => r.json());
+      user.balance += amount;
+      await fetch('/api/user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ balance: user.balance }),
+      });
+      alert(`USD ${amount.toFixed(2)} added to worker balance!`);
+      loadData();
+    }
+
+    function openAddTaskModal() {
+      document.getElementById('addTaskModal').style.display = 'flex';
+    }
+
+    function closeAddTaskModal() {
+      document.getElementById('addTaskModal').style.display = 'none';
+    }
+
+    // Auto-refresh every 5 seconds to catch live submissions from app
+    setInterval(loadData, 5000);
+    loadData();
+  </script>
+</body>
+</html>
