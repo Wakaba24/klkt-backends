@@ -153,6 +153,19 @@ const server = http.createServer(async (req, res) => {
   if (pathname.startsWith('/api/')) {
     setHeaders(res);
 
+    // POST /api/admin/login - Verify admin password
+    if (pathname === '/api/admin/login' && method === 'POST') {
+      const data = await parseBody(req);
+      if (data.password === 'Wakaba24@') {
+        res.statusCode = 200;
+        res.end(JSON.stringify({ success: true, message: 'Access granted' }));
+      } else {
+        res.statusCode = 401;
+        res.end(JSON.stringify({ success: false, error: 'Incorrect password' }));
+      }
+      return;
+    }
+
     // GET /api/health
     if (pathname === '/api/health' && method === 'GET') {
       res.statusCode = 200;
@@ -228,13 +241,17 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    // POST /api/submissions - Submit completed task (from mobile app)
+    // POST /api/submissions - Submit completed task / application (from mobile app)
     if (pathname === '/api/submissions' && method === 'POST') {
       const data = await parseBody(req);
       const newSub = {
         id: 'sub-' + Date.now(),
         taskId: data.taskId || 'task-custom',
         taskTitle: data.taskTitle || 'Custom Upload',
+        fullName: data.fullName || data.name || db.user.name,
+        dob: data.dob || '',
+        location: data.location || '',
+        deviceName: data.deviceName || '',
         workerEmail: data.workerEmail || db.user.email,
         mediaType: data.mediaType || 'video',
         pay: Number(data.pay) || 30.0,

@@ -259,6 +259,7 @@
     .badge-pending { background: #FEF3C7; color: #B45309; }
     .badge-approved { background: #D1FAE5; color: #047857; }
     .badge-rejected { background: #FEE2E2; color: #B91C1C; }
+    .badge-device { background: #F1F5F9; color: #475569; font-weight: 600; text-transform: none; }
 
     .action-btn-group {
       display: flex;
@@ -349,6 +350,34 @@
 </head>
 <body>
 
+  <!-- ADMIN AUTH GATE OVERLAY -->
+  <div id="authGate" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.96); backdrop-filter: blur(12px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: #FFFFFF; width: 100%; max-width: 420px; border-radius: 20px; padding: 36px 32px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); text-align: center;">
+      <div style="width: 52px; height: 52px; background: linear-gradient(135deg, #7C3AED, #4C1D95); color: #FFF; font-size: 26px; font-weight: 800; border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(124, 58, 237, 0.35);">K</div>
+      <h2 style="font-size: 22px; font-weight: 800; color: #0F172A; margin-bottom: 8px;">KLKT Control Center</h2>
+      <p style="font-size: 13px; color: #64748B; margin-bottom: 24px; line-height: 19px;">This admin backend is protected. Please enter the master password to continue.</p>
+      
+      <form onsubmit="handleAdminLogin(event)" style="display: flex; flex-direction: column; gap: 14px;">
+        <div style="text-align: left;">
+          <label style="display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Master Password</label>
+          <input type="password" id="adminPasswordInput" placeholder="Enter password" style="width: 100%; padding: 13px 16px; border-radius: 12px; border: 1.5px solid #E2E8F0; font-size: 15px; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='#7C3AED'" onblur="this.style.borderColor='#E2E8F0'" required autofocus />
+        </div>
+        
+        <div id="loginErrorMsg" style="display: none; color: #DC2626; font-size: 13px; font-weight: 600; text-align: left; background: #FEF2F2; padding: 10px 14px; border-radius: 8px; border: 1px solid #FEE2E2;">
+          Incorrect password. Access denied.
+        </div>
+
+        <button type="submit" style="background: linear-gradient(135deg, #7C3AED, #5B21B6); color: #FFF; border: none; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 8px; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35); transition: opacity 0.2s;">
+          Unlock Backend
+        </button>
+      </form>
+
+      <div style="margin-top: 24px; font-size: 11px; color: #94A3B8;">
+        Protected KLKT Administrator Environment
+      </div>
+    </div>
+  </div>
+
   <!-- Sidebar -->
   <div class="sidebar">
     <div class="brand">
@@ -368,6 +397,7 @@
     <div class="sidebar-footer">
       <div>Backend API: <b>Active (Port 3000)</b></div>
       <div style="margin-top: 4px;">Zero Cost • Free Local Storage</div>
+      <button onclick="logoutAdmin()" style="margin-top: 14px; width: 100%; background: #FEE2E2; color: #B91C1C; border: none; padding: 9px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer;">🔒 Lock Backend</button>
     </div>
   </div>
 
@@ -443,7 +473,10 @@
           <tr>
             <th>Date / Time</th>
             <th>Task Name</th>
-            <th>Worker</th>
+            <th>Applicant Name</th>
+            <th>DOB</th>
+            <th>Location</th>
+            <th>Device</th>
             <th>Pay Rate</th>
             <th>Status</th>
             <th>Control Action</th>
@@ -585,16 +618,22 @@
           <tr>
             <td style="font-size: 13px; color: var(--text-muted);">${new Date(s.submittedAt).toLocaleDateString()} ${new Date(s.submittedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
             <td style="font-weight: 700;">${s.taskTitle}</td>
-            <td style="font-size: 13px;">${s.workerEmail}</td>
+            <td style="font-weight: 700; color: #1E293B;">
+              ${s.fullName || s.workerEmail || 'Applicant'}
+              <div style="font-size: 11px; color: var(--text-muted); font-weight: 400;">${s.workerEmail || ''}</div>
+            </td>
+            <td style="font-size: 13px;">${s.dob || '-'}</td>
+            <td style="font-size: 13px;">${s.location || '-'}</td>
+            <td><span class="badge badge-device">${s.deviceName || 'Mobile'}</span></td>
             <td style="font-weight: 800; color: var(--primary);">$${Number(s.pay).toFixed(2)}</td>
-            <td><span class="badge badge-${s.status}">${s.status}</span></td>
+            <td><span class="badge badge-${s.status}">${s.status.toUpperCase()}</span></td>
             <td>
               ${s.status === 'pending' ? `
                 <div class="action-btn-group">
                   <button class="btn-sm btn-approve" onclick="approveSubmission('${s.id}')">✓ Approve & Pay</button>
                   <button class="btn-sm btn-reject" onclick="rejectSubmission('${s.id}')">✕ Reject</button>
                 </div>
-              ` : `<span style="font-size: 12px; color: var(--text-muted);">Completed</span>`}
+              ` : `<span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">✓ Completed</span>`}
             </td>
           </tr>
         `).join('');
@@ -672,9 +711,50 @@
       document.getElementById('addTaskModal').style.display = 'none';
     }
 
-    // Auto-refresh every 5 seconds to catch live submissions from app
-    setInterval(loadData, 5000);
-    loadData();
+    const ADMIN_PASSWORD = 'Wakaba24@';
+
+    function checkAuth() {
+      const auth = sessionStorage.getItem('klkt_admin_auth');
+      if (auth === ADMIN_PASSWORD) {
+        document.getElementById('authGate').style.display = 'none';
+        loadData();
+      } else {
+        document.getElementById('authGate').style.display = 'flex';
+      }
+    }
+
+    async function handleAdminLogin(e) {
+      e.preventDefault();
+      const entered = document.getElementById('adminPasswordInput').value;
+      if (entered === ADMIN_PASSWORD) {
+        sessionStorage.setItem('klkt_admin_auth', ADMIN_PASSWORD);
+        document.getElementById('authGate').style.display = 'none';
+        document.getElementById('loginErrorMsg').style.display = 'none';
+        loadData();
+      } else {
+        const err = document.getElementById('loginErrorMsg');
+        err.textContent = 'Incorrect password. Access denied.';
+        err.style.display = 'block';
+        document.getElementById('adminPasswordInput').value = '';
+        document.getElementById('adminPasswordInput').focus();
+      }
+    }
+
+    function logoutAdmin() {
+      sessionStorage.removeItem('klkt_admin_auth');
+      document.getElementById('adminPasswordInput').value = '';
+      document.getElementById('loginErrorMsg').style.display = 'none';
+      document.getElementById('authGate').style.display = 'flex';
+    }
+
+    // Auto-refresh every 5 seconds to catch live submissions from app if authenticated
+    setInterval(() => {
+      if (sessionStorage.getItem('klkt_admin_auth') === ADMIN_PASSWORD) {
+        loadData();
+      }
+    }, 5000);
+
+    checkAuth();
   </script>
 </body>
 </html>
